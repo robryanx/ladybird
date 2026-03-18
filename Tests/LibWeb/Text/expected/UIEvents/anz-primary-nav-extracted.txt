@@ -1,0 +1,8 @@
+primary target=LI#personal-item.tabs-personal hasSubNav current=LI#personal-item.tabs-personal hasSubNav defaultPrevented(before)=false
+after primary personalOpen=true personalDisplay=block businessOpen=false businessDisplay=none active=A#personal-landing hash=(empty)
+document target=LI#personal-item.tabs-personal hasSubNav open closestOpen=LI#personal-item.tabs-personal hasSubNav open
+after document personalOpen=true personalDisplay=block businessOpen=false businessDisplay=none active=A#personal-landing hash=(empty)
+after mismatched nav click personalOpen=true personalDisplay=block businessOpen=false businessDisplay=none active=A#personal-landing hash=(empty)
+document target=DIV#outside closestOpen=null
+after document personalOpen=false personalDisplay=none businessOpen=false businessDisplay=none active=BODY hash=(empty)
+after outside click personalOpen=false personalDisplay=none businessOpen=false businessDisplay=none active=BODY hash=(empty)

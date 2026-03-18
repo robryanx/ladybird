@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<style>
+body {
+    margin: 0;
+}
+
+ul {
+    margin: 20px;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+    display: inline-block;
+    padding: 20px;
+    background: lightblue;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+</style>
+<ul>
+    <li id="item">
+        <a id="link" href="#clicked">Personal</a>
+    </li>
+</ul>
+<script src="../include.js"></script>
+<script>
+    function log(prefix, event) {
+        println(`${prefix} ${event.type} target=${event.target.id || event.target.nodeName} currentTarget=${event.currentTarget.id || event.currentTarget.nodeName}`);
+    }
+
+    for (const eventName of ["mousedown", "mouseup", "click"]) {
+        item.addEventListener(eventName, event => log("li", event));
+        link.addEventListener(eventName, event => log("a", event));
+    }
+
+    test(() => {
+        const itemRect = item.getBoundingClientRect();
+        const linkRect = link.getBoundingClientRect();
+        const y = linkRect.top + linkRect.height / 2;
+
+        internals.mouseDown(linkRect.left + linkRect.width / 2, y);
+        internals.mouseUp(itemRect.left + 4, y);
+
+        println(`hash=${location.hash || "(empty)"}`);
+    });
+</script>

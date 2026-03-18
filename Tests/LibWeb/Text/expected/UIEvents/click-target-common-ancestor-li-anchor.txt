@@ -1,0 +1,5 @@
+a mousedown target=link currentTarget=link
+li mousedown target=link currentTarget=item
+li mouseup target=item currentTarget=item
+li click target=item currentTarget=item
+hash=(empty)

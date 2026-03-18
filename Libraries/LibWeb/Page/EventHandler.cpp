@@ -7,6 +7,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <AK/HashTable.h>
 #include <LibGfx/Bitmap.h>
 #include <LibGfx/ImmutableBitmap.h>
 #include <LibUnicode/CharacterTypes.h>
@@ -100,6 +101,26 @@ static bool parent_element_for_event_dispatch(Painting::Paintable& paintable, GC
         node = layout_node->dom_node();
     }
     return node && layout_node;
+}
+
+static GC::Ptr<DOM::Node> nearest_common_inclusive_ancestor(GC::Ptr<DOM::Node> a, GC::Ptr<DOM::Node> b)
+{
+    if (!a || !b)
+        return nullptr;
+
+    if (a == b)
+        return a;
+
+    HashTable<DOM::Node*> ancestors;
+    for (auto* node = a.ptr(); node; node = node->parent_or_shadow_host())
+        ancestors.set(node);
+
+    for (auto* node = b.ptr(); node; node = node->parent_or_shadow_host()) {
+        if (ancestors.contains(node))
+            return node;
+    }
+
+    return nullptr;
 }
 
 static Gfx::Cursor css_to_gfx_cursor(CSS::CursorPredefined css_cursor)
@@ -1045,12 +1066,19 @@ EventResult EventHandler::handle_mouseup(CSSPixelPoint visual_viewport_position,
         return EventResult::Dropped;
 
     auto coordinates = compute_mouse_event_coordinates(visual_viewport_position, viewport_position, *paintable, *layout_node);
+    auto click_target = nearest_common_inclusive_ancestor(node, m_mousedown_target.ptr());
+    auto click_coordinates = coordinates;
+    if (click_target) {
+        if (auto* click_target_paintable = click_target->paintable()) {
+            if (auto* click_target_layout_node = click_target->layout_node())
+                click_coordinates = compute_mouse_event_coordinates(visual_viewport_position, viewport_position, *click_target_paintable, *click_target_layout_node);
+        }
+    }
+
     dispatch_a_pointer_event_for_a_device_that_supports_hover(PointerEventType::PointerUp, *node, chrome_widget, coordinates, screen_position, {}, button, buttons, modifiers, click_count);
 
-    // FIXME: Per spec, the click target should be the nearest common inclusive ancestor of the pointerdown
-    //        and pointerup targets. Currently we require an exact match.
-    if (node.ptr() == m_mousedown_target) {
-        if (fire_click_events(*node, coordinates, screen_position, button, buttons, modifiers, click_count)
+    if (click_target) {
+        if (fire_click_events(*click_target, click_coordinates, screen_position, button, buttons, modifiers, click_count)
             && !chrome_widget) {
             // NB: Event dispatches above may have run JS that invalidated layout.
             m_navigable->active_document()->update_layout(DOM::UpdateLayoutReason::EventHandlerRunActivationBehavior);
@@ -1060,7 +1088,7 @@ EventResult EventHandler::handle_mouseup(CSSPixelPoint visual_viewport_position,
             //        some way to be able to communicate with browsing contexts in remote WebContent processes, and
             //        then step 8 of this algorithm needs to be implemented in Navigable::choose_a_navigable:
             //        https://html.spec.whatwg.org/multipage/document-sequences.html#the-rules-for-choosing-a-navigable
-            run_activation_behavior(*node, button, modifiers);
+            run_activation_behavior(*click_target, button, modifiers);
         }
     }
 

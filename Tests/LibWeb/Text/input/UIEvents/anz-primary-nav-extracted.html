@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<style>
+body {
+    margin: 0;
+    font: 16px/1.375 sans-serif;
+}
+
+.primary {
+    position: relative;
+    width: 900px;
+    margin: 24px;
+}
+
+.desktop-menu .navigation .primary__nav {
+    margin: 0;
+    padding: 0;
+}
+
+.desktop-menu .navigation .primary__nav > li {
+    position: relative;
+    list-style: none;
+    float: left;
+    padding: 20px 14px;
+    margin-right: 12px;
+    cursor: pointer;
+    background: #eef6fb;
+}
+
+.desktop-menu .navigation .primary__nav > li > a {
+    color: #0072ac;
+    text-decoration: none;
+}
+
+.desktop-menu .navigation .primary__nav > li .subNav {
+    display: none;
+    position: absolute;
+    top: 58px;
+    left: 0;
+    width: 420px;
+    padding: 12px;
+    border: 1px solid #c9d6df;
+    background: white;
+}
+
+.subNav__content {
+    display: flex;
+    gap: 20px;
+}
+
+.subNav__content__menu {
+    flex: 1;
+}
+
+.subNav__content__menu__items {
+    margin: 0;
+    padding: 0;
+}
+
+.subNav__content__menu__items > li {
+    list-style: none;
+    margin-bottom: 10px;
+}
+
+.subNav__content__menu__items a {
+    display: block;
+    color: #004165;
+    text-decoration: none;
+}
+
+.subNav__promo {
+    width: 130px;
+    padding-left: 16px;
+    border-left: 1px solid #d8e2e8;
+}
+
+.subNav__promo__item a {
+    display: block;
+    color: #004165;
+    text-decoration: none;
+}
+
+.clearfix::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+#outside {
+    margin: 180px 24px 0;
+    padding: 16px;
+    background: #f2f2f2;
+}
+</style>
+<div class="primary grid clearfix">
+    <div class="desktop-menu clearfix">
+        <div role="navigation" aria-hidden="false" class="navigation" aria-label="Primary">
+            <ul class="primary__nav clearfix">
+                <li id="personal-item" class="tabs-personal hasSubNav">
+                    <a id="personal-trigger" href="#personal" class="primary__nav__trigger semibold" aria-expanded="false" role="button">Personal</a>
+                    <div id="personal-subnav" class="subNav" style="display: none;">
+                        <div class="subNav__content flex-container">
+                            <div class="subNav__content__menu">
+                                <ul class="subNav__content__menu__items clearfix">
+                                    <li class="subNav__content__menu__items__landing" role="menuitem">
+                                        <a id="personal-landing" href="#personal-landing">
+                                            <span class="subNav__content__menu__items__landing__title">Personal</span>
+                                        </a>
+                                    </li>
+                                    <li class="subNav__content__menu__items__accounts" role="menuitem">
+                                        <a href="#bank-accounts" class="clearfix">
+                                            <span class="subNav__content__menu__items__accounts__title">Bank accounts</span>
+                                            <span class="subNav__content__menu__items__accounts__desc">Everyday/savings &amp; term deposits</span>
+                                        </a>
+                                    </li>
+                                    <li class="subNav__content__menu__items__accounts" role="menuitem">
+                                        <a href="#credit-cards" class="clearfix">
+                                            <span class="subNav__content__menu__items__accounts__title">Credit cards</span>
+                                            <span class="subNav__content__menu__items__accounts__desc">Low interest rate and rewards cards</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="subNav__promo">
+                                <div class="subNav__promo__item">
+                                    <a href="#promo-personal">
+                                        <span>Featured personal offer</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li id="business-item" class="tabs-personal hasSubNav">
+                    <a id="business-trigger" href="#business" class="primary__nav__trigger false" aria-expanded="false" role="button">Business</a>
+                    <div id="business-subnav" class="subNav" style="display: none;">
+                        <div class="subNav__content flex-container">
+                            <div class="subNav__content__menu">
+                                <ul class="subNav__content__menu__items clearfix">
+                                    <li class="subNav__content__menu__items__landing" role="menuitem">
+                                        <a id="business-landing" href="#business-landing">
+                                            <span class="subNav__content__menu__items__landing__title">See all Business</span>
+                                        </a>
+                                    </li>
+                                    <li class="subNav__content__menu__items__accounts" role="menuitem">
+                                        <a href="#business-finance" class="clearfix">
+                                            <span class="subNav__content__menu__items__accounts__title">Business finance</span>
+                                            <span class="subNav__content__menu__items__accounts__desc">Loans and cash flow options</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="subNav__promo">
+                                <div class="subNav__promo__item">
+                                    <a href="#promo-business">
+                                        <span>Featured business offer</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="outside">Outside the nav</div>
+<script src="file:///tmp/jquery-3.5.1.js"></script>
+<script src="../include.js"></script>
+<script>
+    jQuery.fn.matchHeight = function() {
+        return this;
+    };
+
+    function describeTarget(target) {
+        if (!target)
+            return "null";
+        let description = target.nodeName;
+        if (target.id)
+            description += `#${target.id}`;
+        if (target.className)
+            description += `.${target.className}`;
+        return description;
+    }
+
+    function logState(prefix) {
+        println(
+            `${prefix} personalOpen=${personalItem.classList.contains("open")} personalDisplay=${getComputedStyle(personalSubnav).display} ` +
+            `businessOpen=${businessItem.classList.contains("open")} businessDisplay=${getComputedStyle(businessSubnav).display} ` +
+            `active=${describeTarget(document.activeElement)} hash=${location.hash || "(empty)"}`
+        );
+    }
+
+    const personalItem = document.getElementById("personal-item");
+    const personalTrigger = document.getElementById("personal-trigger");
+    const personalSubnav = document.getElementById("personal-subnav");
+    const businessItem = document.getElementById("business-item");
+    const businessSubnav = document.getElementById("business-subnav");
+    const outside = document.getElementById("outside");
+
+    jQuery(".primary__nav").on("click.primary.nav", "> li", function(event) {
+        var item = jQuery(this);
+        var link = item.find("> a");
+        var openSibling = item.siblings(".open");
+        var siblingLink = openSibling.find("> a");
+
+        println(`primary target=${describeTarget(event.target)} current=${describeTarget(event.currentTarget)} defaultPrevented(before)=${event.isDefaultPrevented()}`);
+        if (jQuery(event.target).hasClass("primary__nav__trigger"))
+            event.preventDefault();
+
+        openSibling.find(".subNav").hide();
+        openSibling.removeClass("open");
+        siblingLink.attr("aria-expanded", "false");
+
+        var wasOpen = item.hasClass("open");
+        item.toggleClass("open", !wasOpen);
+        link.attr("aria-expanded", !wasOpen);
+        item.find(".subNav").fadeToggle(0);
+        jQuery(".subNav__content__menu__items__accounts").matchHeight();
+        if (wasOpen)
+            item.focus();
+        else
+            item.find(".subNav").find("li:eq(0) a").focus();
+
+        logState("after primary");
+    });
+
+    jQuery(document).on("click.menu.closer", function(event) {
+        if (event.target.id !== "city__selections") {
+            if (jQuery(event.target).closest(".open").length) {
+                jQuery(".open").each(function() {
+                    if (jQuery(event.target).closest(".open")[0] !== this && !jQuery(this).hasClass("access-offscreen")) {
+                        jQuery(this).removeClass("open");
+                        jQuery(this).find(".subNav").hide();
+                        jQuery(this).find("> a").attr("aria-expanded", "false");
+                    }
+                });
+            } else {
+                jQuery(".primary__nav > li.open").removeClass("open").find(".subNav").hide().end().find("> a").attr("aria-expanded", "false");
+            }
+
+            if (!jQuery(event.target).closest("ul.primary__nav").length)
+                jQuery(".primary__nav > li.open").click();
+        }
+
+        println(`document target=${describeTarget(event.target)} closestOpen=${describeTarget(jQuery(event.target).closest(".open")[0] || null)}`);
+        logState("after document");
+    });
+
+    test(() => {
+        const itemRect = personalItem.getBoundingClientRect();
+        const triggerRect = personalTrigger.getBoundingClientRect();
+        const y = triggerRect.top + triggerRect.height / 2;
+
+        internals.mouseDown(triggerRect.left + triggerRect.width / 2, y);
+        internals.mouseUp(itemRect.left + 4, y);
+        logState("after mismatched nav click");
+
+        const outsideRect = outside.getBoundingClientRect();
+        internals.click(outsideRect.left + 10, outsideRect.top + 10);
+        logState("after outside click");
+    });
+</script>
