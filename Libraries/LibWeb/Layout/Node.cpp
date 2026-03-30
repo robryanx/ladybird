@@ -10,6 +10,7 @@
 #include <LibWeb/CSS/ComputedProperties.h>
 #include <LibWeb/CSS/StyleValues/AbstractImageStyleValue.h>
 #include <LibWeb/CSS/StyleValues/BorderRadiusStyleValue.h>
+#include <LibWeb/CSS/StyleValues/CustomIdentStyleValue.h>
 #include <LibWeb/CSS/StyleValues/IntegerStyleValue.h>
 #include <LibWeb/CSS/StyleValues/KeywordStyleValue.h>
 #include <LibWeb/CSS/StyleValues/LengthStyleValue.h>
@@ -672,6 +673,39 @@ void NodeWithStyle::apply_style(CSS::ComputedProperties const& computed_style)
     computed_values.set_appearance(computed_style.appearance());
 
     computed_values.set_position(computed_style.position());
+    auto const& position_anchor = computed_style.property(CSS::PropertyID::PositionAnchor);
+    if (position_anchor.is_custom_ident()) {
+        computed_values.set_position_anchor(CSS::PositionAnchor::make_named_anchor(position_anchor.as_custom_ident().custom_ident()));
+    } else if (position_anchor.is_keyword()) {
+        switch (position_anchor.to_keyword()) {
+        case CSS::Keyword::Normal:
+            computed_values.set_position_anchor(CSS::PositionAnchor::make_normal());
+            break;
+        case CSS::Keyword::None:
+            computed_values.set_position_anchor(CSS::PositionAnchor::make_none());
+            break;
+        case CSS::Keyword::Auto:
+            computed_values.set_position_anchor(CSS::PositionAnchor::make_auto());
+            break;
+        default:
+            VERIFY_NOT_REACHED();
+        }
+    } else {
+        VERIFY_NOT_REACHED();
+    }
+
+    // https://drafts.csswg.org/css-anchor-position-1/#anchor-name
+    Vector<FlyString> anchor_names;
+    auto const& anchor_name = computed_style.property(CSS::PropertyID::AnchorName);
+    if (anchor_name.is_value_list()) {
+        for (auto const& value : anchor_name.as_value_list().values()) {
+            if (value->is_custom_ident())
+                anchor_names.append(value->as_custom_ident().custom_ident());
+        }
+    } else if (anchor_name.is_custom_ident()) {
+        anchor_names.append(anchor_name.as_custom_ident().custom_ident());
+    }
+    computed_values.set_anchor_names(move(anchor_names));
 
     computed_values.set_text_align(computed_style.text_align());
     computed_values.set_text_justify(computed_style.text_justify());
@@ -1108,6 +1142,8 @@ void NodeWithStyle::reset_table_box_computed_values_used_by_wrapper_to_init_valu
 
     auto& mutable_computed_values = this->mutable_computed_values();
     mutable_computed_values.set_position(CSS::InitialValues::position());
+    mutable_computed_values.set_position_anchor(CSS::InitialValues::position_anchor());
+    mutable_computed_values.set_anchor_names({});
     mutable_computed_values.set_float(CSS::InitialValues::float_());
     mutable_computed_values.set_clear(CSS::InitialValues::clear());
     mutable_computed_values.set_inset(CSS::InitialValues::inset());
@@ -1130,6 +1166,8 @@ void NodeWithStyle::transfer_table_box_computed_values_to_wrapper_computed_value
     else
         mutable_wrapper_computed_values.set_display(CSS::Display::from_short(CSS::Display::Short::FlowRoot));
     mutable_wrapper_computed_values.set_position(computed_values().position());
+    mutable_wrapper_computed_values.set_position_anchor(computed_values().position_anchor());
+    mutable_wrapper_computed_values.set_anchor_names(computed_values().anchor_names());
     mutable_wrapper_computed_values.set_inset(computed_values().inset());
     mutable_wrapper_computed_values.set_float(computed_values().float_());
     mutable_wrapper_computed_values.set_clear(computed_values().clear());

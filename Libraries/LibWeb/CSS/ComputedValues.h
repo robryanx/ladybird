@@ -28,6 +28,7 @@
 #include <LibWeb/CSS/Ratio.h>
 #include <LibWeb/CSS/Size.h>
 #include <LibWeb/CSS/StyleValues/AbstractImageStyleValue.h>
+#include <LibWeb/CSS/StyleValues/AnchorStyleValue.h>
 #include <LibWeb/CSS/StyleValues/BasicShapeStyleValue.h>
 #include <LibWeb/CSS/StyleValues/CursorStyleValue.h>
 #include <LibWeb/CSS/StyleValues/ImageStyleValue.h>
@@ -147,6 +148,40 @@ using CursorData = Variant<NonnullRefPtr<CursorStyleValue const>, CursorPredefin
 
 using ListStyleType = Variant<Empty, RefPtr<CounterStyle const>, String>;
 
+// https://drafts.csswg.org/css-anchor-position-1/#position-anchor
+// normal | none | auto | <anchor-name>
+// All spec-defined values are stored here. In the spec, `auto` selects an implicit anchor
+// element defined by the host language (for example, popover-related anchoring). Current
+// layout only resolves a default anchor when this is an explicit <anchor-name>.
+struct PositionAnchor {
+    enum class Type {
+        Auto,
+        Normal,
+        None,
+        NamedAnchor,
+    };
+
+    static PositionAnchor make_auto() { return PositionAnchor(Type::Auto); }
+    static PositionAnchor make_normal() { return PositionAnchor(Type::Normal); }
+    static PositionAnchor make_none() { return PositionAnchor(Type::None); }
+    static PositionAnchor make_named_anchor(FlyString anchor_name) { return PositionAnchor(Type::NamedAnchor, move(anchor_name)); }
+
+    bool is_named_anchor() const { return type == Type::NamedAnchor; }
+
+    Type type { Type::Normal };
+    Optional<FlyString> anchor_name;
+
+private:
+    explicit PositionAnchor(Type type, Optional<FlyString> anchor_name = {})
+        : type(type)
+        , anchor_name(move(anchor_name))
+    {
+    }
+
+public:
+    PositionAnchor() = default;
+};
+
 class InitialValues {
 public:
     static AspectRatio aspect_ratio() { return AspectRatio { true, {} }; }
@@ -224,9 +259,9 @@ public:
     static Length border_radius() { return Length::make_px(0); }
     static Variant<VerticalAlign, LengthPercentage> vertical_align() { return VerticalAlign::Baseline; }
     static LengthBox inset() { return {}; }
-    static LengthBox margin() { return { Length::make_px(0), Length::make_px(0), Length::make_px(0), Length::make_px(0) }; }
-    static LengthBox padding() { return { Length::make_px(0), Length::make_px(0), Length::make_px(0), Length::make_px(0) }; }
-    static LengthBox overflow_clip_margin() { return { Length::make_px(0), Length::make_px(0), Length::make_px(0), Length::make_px(0) }; }
+    static LengthBox margin() { return { LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } } }; }
+    static LengthBox padding() { return { LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } } }; }
+    static LengthBox overflow_clip_margin() { return { LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } }, LengthBox::Side { LengthPercentageOrAuto { Length::make_px(0) } } }; }
     static Size width() { return Size::make_auto(); }
     static Size min_width() { return Size::make_auto(); }
     static Size max_width() { return Size::make_none(); }
@@ -270,6 +305,8 @@ public:
     static ContainerType container_type() { return {}; }
     static MixBlendMode mix_blend_mode() { return MixBlendMode::Normal; }
     static Optional<int> z_index() { return OptionalNone(); }
+    static PositionAnchor position_anchor() { return PositionAnchor::make_normal(); }
+    static Vector<FlyString> anchor_names() { return {}; }
 
     // https://www.w3.org/TR/SVG/geometry.html
     static LengthPercentage cx() { return Length::make_px(0); }
@@ -611,6 +648,8 @@ public:
     Optional<FlyString> view_transition_name() const { return m_noninherited.view_transition_name; }
     TouchActionData touch_action() const { return m_noninherited.touch_action; }
     ShapeRendering shape_rendering() const { return m_noninherited.shape_rendering; }
+    PositionAnchor const& position_anchor() const { return m_noninherited.position_anchor; }
+    Vector<FlyString> const& anchor_names() const { return m_noninherited.anchor_names; }
 
     LengthBox const& inset() const { return m_noninherited.inset; }
     LengthBox const& margin() const { return m_noninherited.margin; }
@@ -878,6 +917,7 @@ protected:
         Containment contain { InitialValues::contain() };
         ContainerType container_type { InitialValues::container_type() };
         MixBlendMode mix_blend_mode { InitialValues::mix_blend_mode() };
+        PositionAnchor position_anchor { InitialValues::position_anchor() };
         WhiteSpaceTrimData white_space_trim;
         Position object_position { InitialValues::object_position() };
         Optional<FlyString> view_transition_name;
@@ -885,6 +925,10 @@ protected:
         MaskType mask_type { InitialValues::mask_type() };
         ScrollbarWidth scrollbar_width { InitialValues::scrollbar_width() };
         ShapeRendering shape_rendering { InitialValues::shape_rendering() };
+        // https://drafts.csswg.org/css-anchor-position-1/#anchor-name
+        // The anchor-name property declares that an element is an anchor element,
+        // and gives it a list of anchor names to be targeted by.
+        Vector<FlyString> anchor_names { InitialValues::anchor_names() };
         float flood_opacity { InitialValues::flood_opacity() };
         RefPtr<TransformationStyleValue const> rotate;
         RefPtr<TransformationStyleValue const> translate;
@@ -921,6 +965,14 @@ protected:
                 translate->visit_edges(visitor);
             if (scale)
                 scale->visit_edges(visitor);
+            if (auto const* anchor = inset.top().anchor())
+                anchor->visit_edges(visitor);
+            if (auto const* anchor = inset.right().anchor())
+                anchor->visit_edges(visitor);
+            if (auto const* anchor = inset.bottom().anchor())
+                anchor->visit_edges(visitor);
+            if (auto const* anchor = inset.left().anchor())
+                anchor->visit_edges(visitor);
             content.visit_edges(visitor);
         }
     };
@@ -981,6 +1033,7 @@ public:
     void set_text_underline_position(TextUnderlinePosition value) { m_inherited.text_underline_position = value; }
     void set_webkit_text_fill_color(Color value) { m_inherited.webkit_text_fill_color = value; }
     void set_position(Positioning position) { m_noninherited.position = position; }
+    void set_position_anchor(PositionAnchor position_anchor) { m_noninherited.position_anchor = move(position_anchor); }
     void set_white_space_collapse(WhiteSpaceCollapse value) { m_inherited.white_space_collapse = value; }
     void set_white_space_trim(WhiteSpaceTrimData value) { m_noninherited.white_space_trim = value; }
     void set_word_spacing(CSSPixels value) { m_inherited.word_spacing = value; }
@@ -992,6 +1045,7 @@ public:
     void set_height(Size const& height) { m_noninherited.height = height; }
     void set_min_height(Size const& height) { m_noninherited.min_height = height; }
     void set_max_height(Size const& height) { m_noninherited.max_height = height; }
+    void set_anchor_names(Vector<FlyString> anchor_names) { m_noninherited.anchor_names = move(anchor_names); }
     void set_inset(LengthBox const& inset) { m_noninherited.inset = inset; }
     void set_margin(LengthBox const& margin) { m_noninherited.margin = margin; }
     void set_padding(LengthBox const& padding) { m_noninherited.padding = padding; }

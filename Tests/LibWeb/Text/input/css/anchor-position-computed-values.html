@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<script src="../include.js"></script>
+<style>
+    html, body {
+        margin: 0;
+    }
+
+    #named-anchor {
+        anchor-name: --status, --fallback;
+        position: absolute;
+        left: 24px;
+        top: 32px;
+        width: 48px;
+        height: 16px;
+    }
+
+    #inset-scene {
+        position: relative;
+        width: 320px;
+        height: 180px;
+    }
+
+    #default-position-anchor {
+        position: absolute;
+    }
+
+    #named-position-anchor {
+        position: absolute;
+        position-anchor: --status;
+    }
+
+    #none-position-anchor {
+        position: absolute;
+        position-anchor: none;
+    }
+
+    #anchor-insets {
+        position: absolute;
+        position-anchor: --status;
+        top: anchor(top);
+        right: anchor(right);
+        bottom: anchor(bottom);
+        left: anchor(left);
+    }
+
+    #scene {
+        position: relative;
+        width: 400px;
+        height: 300px;
+    }
+
+    #scene-anchor {
+        position: absolute;
+        anchor-name: --scene-anchor;
+        left: 100px;
+        top: 120px;
+        width: 80px;
+        height: 40px;
+    }
+
+    #scene-positioned {
+        position: absolute;
+        position-anchor: --scene-anchor;
+        left: anchor(left);
+        top: anchor(bottom);
+        width: 20px;
+        height: 10px;
+    }
+</style>
+<div id="default-anchor-name"></div>
+<div id="default-position-anchor"></div>
+<div id="named-position-anchor"></div>
+<div id="none-position-anchor"></div>
+<div id="inset-scene">
+    <div id="named-anchor"></div>
+    <div id="anchor-insets"></div>
+</div>
+<div id="scene">
+    <div id="scene-anchor"></div>
+    <div id="scene-positioned"></div>
+</div>
+<script>
+    test(() => {
+        println(`default anchor-name: ${getComputedStyle(document.getElementById("default-anchor-name")).getPropertyValue("anchor-name")}`);
+        println(`named anchor-name: ${getComputedStyle(document.getElementById("named-anchor")).getPropertyValue("anchor-name")}`);
+        println(`default position-anchor: ${getComputedStyle(document.getElementById("default-position-anchor")).getPropertyValue("position-anchor")}`);
+        println(`named position-anchor: ${getComputedStyle(document.getElementById("named-position-anchor")).getPropertyValue("position-anchor")}`);
+        println(`none position-anchor: ${getComputedStyle(document.getElementById("none-position-anchor")).getPropertyValue("position-anchor")}`);
+
+        const anchorInsets = getComputedStyle(document.getElementById("anchor-insets"));
+        println(`computed top: ${anchorInsets.getPropertyValue("top")}`);
+        println(`computed right: ${anchorInsets.getPropertyValue("right")}`);
+        println(`computed bottom: ${anchorInsets.getPropertyValue("bottom")}`);
+        println(`computed left: ${anchorInsets.getPropertyValue("left")}`);
+
+        const formatRect = rect => `${rect.x},${rect.y} ${rect.width}x${rect.height}`;
+        println(`scene anchor rect: ${formatRect(document.getElementById("scene-anchor").getBoundingClientRect())}`);
+        println(`scene positioned rect: ${formatRect(document.getElementById("scene-positioned").getBoundingClientRect())}`);
+    });
+</script>

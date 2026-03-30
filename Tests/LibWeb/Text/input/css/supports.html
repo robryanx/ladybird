@@ -25,6 +25,9 @@
             "@supports selector(a#more > .complicated.case:nth-child(42))",
             "@supports selector(.easy) or selector(.....nope)",
             "@supports env(preferred-text-scale)",
+            "@supports (position-anchor: --status)",
+            "@supports (position-anchor: normal)",
+            "@supports (position-anchor: none)",
         ];
         println("These should all be valid:");
         for (let testCase of validCases) {

@@ -1,0 +1,11 @@
+default anchor-name: none
+named anchor-name: --status, --fallback
+default position-anchor: normal
+named position-anchor: --status
+none position-anchor: none
+computed top: 32px
+computed right: 248px
+computed bottom: 132px
+computed left: 24px
+scene anchor rect: 100,300 80x40
+scene positioned rect: 100,340 20x10

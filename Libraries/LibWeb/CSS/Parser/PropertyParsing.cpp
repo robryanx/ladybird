@@ -3611,7 +3611,13 @@ RefPtr<StyleValue const> Parser::parse_place_self_value(TokenStream<ComponentVal
 // https://drafts.csswg.org/css-anchor-position/#position-anchor
 RefPtr<StyleValue const> Parser::parse_position_anchor_value(TokenStream<ComponentValue>& tokens)
 {
-    // auto | <anchor-name>
+    // normal | none | auto | <anchor-name>
+    if (auto normal_keyword = parse_all_as_single_keyword_value(tokens, Keyword::Normal))
+        return normal_keyword;
+
+    if (auto none_keyword = parse_all_as_single_keyword_value(tokens, Keyword::None))
+        return none_keyword;
+
     if (auto auto_keyword = parse_all_as_single_keyword_value(tokens, Keyword::Auto))
         return auto_keyword;
 

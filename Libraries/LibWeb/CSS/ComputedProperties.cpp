@@ -284,14 +284,16 @@ Length ComputedProperties::length(PropertyID property_id) const
 
 LengthBox ComputedProperties::length_box(PropertyID left_id, PropertyID top_id, PropertyID right_id, PropertyID bottom_id, LengthPercentageOrAuto const& default_value) const
 {
-    auto length_box_side = [&](PropertyID id) -> LengthPercentageOrAuto {
+    auto length_box_side = [&](PropertyID id) -> LengthBox::Side {
         auto const& value = property(id);
+
+        if (value.is_anchor())
+            return LengthBox::Side::from_anchor(RefPtr<AnchorStyleValue const> { value.as_anchor() });
 
         if (value.is_calculated() || value.is_percentage() || value.is_length() || value.has_auto())
             return LengthPercentageOrAuto::from_style_value(value);
 
-        // FIXME: Handle anchor sizes
-        return default_value;
+        return LengthBox::Side { default_value };
     };
 
     return LengthBox {

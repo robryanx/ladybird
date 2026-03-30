@@ -7,6 +7,9 @@ These should all be valid:
 @supports selector(a#more > .complicated.case:nth-child(42)): PASS
 @supports selector(.easy) or selector(.....nope): PASS
 @supports env(preferred-text-scale): PASS
+@supports (position-anchor: --status): PASS
+@supports (position-anchor: normal): PASS
+@supports (position-anchor: none): PASS
 
 These should all be invalid:
 @supports (not (color: green)): PASS

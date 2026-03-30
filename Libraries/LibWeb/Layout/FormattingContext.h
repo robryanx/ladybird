@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <AK/FlyString.h>
 #include <AK/OwnPtr.h>
 #include <LibWeb/Forward.h>
 #include <LibWeb/Layout/AvailableSpace.h>
@@ -47,8 +48,15 @@ enum class AbsposAxisMode {
 struct AbsposContainingBlockInfo {
     // Containing block rect in CB Box's content-edge coordinates.
     CSSPixelRect rect;
+    Optional<CSSPixelRect> anchor_rect;
+    CSS::LengthPercentageOrAuto resolved_left { CSS::LengthPercentageOrAuto::make_auto() };
+    CSS::LengthPercentageOrAuto resolved_right { CSS::LengthPercentageOrAuto::make_auto() };
+    CSS::LengthPercentageOrAuto resolved_top { CSS::LengthPercentageOrAuto::make_auto() };
+    CSS::LengthPercentageOrAuto resolved_bottom { CSS::LengthPercentageOrAuto::make_auto() };
     AbsposAxisMode horizontal_axis_mode;
     AbsposAxisMode vertical_axis_mode;
+    bool horizontal_insets_are_auto { false };
+    bool vertical_insets_are_auto { false };
     // Grid alignment for axes with auto CSS insets.
     // When set, the base method applies alignment-driven insets after sizing.
     Optional<Alignment> horizontal_alignment;
@@ -160,6 +168,13 @@ public:
     void compute_inset(NodeWithStyleAndBoxModelMetrics const&, CSSPixelSize containing_block_size);
 
 protected:
+    enum class InsetSide {
+        Top,
+        Right,
+        Bottom,
+        Left,
+    };
+
     FormattingContext(Type, LayoutMode, LayoutState&, Box const&, FormattingContext* parent = nullptr);
 
     [[nodiscard]] bool should_treat_width_as_auto(Box const&, AvailableSpace const&) const;
@@ -205,19 +220,22 @@ protected:
     void layout_absolutely_positioned_element(Box const&, AbsposContainingBlockInfo const&);
     void layout_absolutely_positioned_children();
     virtual AbsposContainingBlockInfo resolve_abspos_containing_block_info(Box const&);
-    void compute_width_for_absolutely_positioned_element(Box const&, AvailableSpace const&);
-    void compute_width_for_absolutely_positioned_non_replaced_element(Box const&, AvailableSpace const&);
-    void compute_width_for_absolutely_positioned_replaced_element(Box const&, AvailableSpace const&);
+    void compute_width_for_absolutely_positioned_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&);
+    void compute_width_for_absolutely_positioned_non_replaced_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&);
+    void compute_width_for_absolutely_positioned_replaced_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&);
 
     enum class BeforeOrAfterInsideLayout {
         Before,
         After,
     };
-    void compute_height_for_absolutely_positioned_element(Box const&, AvailableSpace const&, BeforeOrAfterInsideLayout);
-    void compute_height_for_absolutely_positioned_non_replaced_element(Box const&, AvailableSpace const&, BeforeOrAfterInsideLayout);
-    void compute_height_for_absolutely_positioned_replaced_element(Box const&, AvailableSpace const&, BeforeOrAfterInsideLayout);
+    void compute_height_for_absolutely_positioned_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&, BeforeOrAfterInsideLayout);
+    void compute_height_for_absolutely_positioned_non_replaced_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&, BeforeOrAfterInsideLayout);
+    void compute_height_for_absolutely_positioned_replaced_element(Box const&, AvailableSpace const&, AbsposContainingBlockInfo const&, BeforeOrAfterInsideLayout);
 
     [[nodiscard]] Optional<CSSPixels> compute_auto_height_for_absolutely_positioned_element(Box const&, AvailableSpace const&, BeforeOrAfterInsideLayout) const;
+    [[nodiscard]] Optional<FlyString> resolve_anchor_name_to_lookup(Box const&, Optional<FlyString> const& explicit_anchor_name = {}) const;
+    [[nodiscard]] Optional<CSSPixelRect> resolve_named_anchor_rect(Box const&, Optional<FlyString> const& explicit_anchor_name = {}) const;
+    [[nodiscard]] CSS::LengthPercentageOrAuto resolve_anchor_inset(Box const&, Optional<CSSPixelRect> const&, CSSPixelSize containing_block_size, InsetSide) const;
 
     [[nodiscard]] Box const* box_child_to_derive_baseline_from(Box const&) const;
 

@@ -14,11 +14,11 @@
 </div>
 
 <script>
-// position-anchor: <anchor-element>
-// <anchor-element> = auto | <dashed-ident>
+// position-anchor: normal | none | auto | <anchor-name>
 test_valid_value('position-anchor', 'auto');
+test_valid_value('position-anchor', 'normal');
+test_valid_value('position-anchor', 'none');
 test_valid_value('position-anchor', '--foo');
-test_invalid_value('position-anchor', 'none');
 test_invalid_value('position-anchor', 'foo-bar');
 test_invalid_value('position-anchor', '--foo --bar')
 test_invalid_value('position-anchor', '--foo, --bar')
@@ -27,11 +27,13 @@ test_invalid_value('position-anchor', '100%');
 
 // Computed value: as specified
 test_computed_value('position-anchor', 'auto');
+test_computed_value('position-anchor', 'normal');
+test_computed_value('position-anchor', 'none');
 test_computed_value('position-anchor', '--foo');
 
-// Initial: auto
+// Initial: normal
 // Inherited: no
-assert_not_inherited('position-anchor', 'auto', '--foo');
+assert_not_inherited('position-anchor', 'normal', '--foo');
 
 // Animation type: discrete
 test_no_interpolation({

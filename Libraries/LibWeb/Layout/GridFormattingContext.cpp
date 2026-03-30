@@ -2191,13 +2191,28 @@ AbsposContainingBlockInfo GridFormattingContext::resolve_abspos_containing_block
         return get_grid_area_rect(item);
     }();
 
-    // Grid always uses InsetFromRect — alignment handles auto inset cases
+    auto anchor_rect = resolve_named_anchor_rect(box);
+    auto containing_block_size = grid_area_rect.size();
+    auto resolved_left = resolve_anchor_inset(box, anchor_rect, containing_block_size, InsetSide::Left);
+    auto resolved_right = resolve_anchor_inset(box, anchor_rect, containing_block_size, InsetSide::Right);
+    auto resolved_top = resolve_anchor_inset(box, anchor_rect, containing_block_size, InsetSide::Top);
+    auto resolved_bottom = resolve_anchor_inset(box, anchor_rect, containing_block_size, InsetSide::Bottom);
+    auto horizontal_insets_are_auto = resolved_left.is_auto() && resolved_right.is_auto();
+    auto vertical_insets_are_auto = resolved_top.is_auto() && resolved_bottom.is_auto();
+
     return {
-        grid_area_rect,
-        AbsposAxisMode::InsetFromRect,
-        AbsposAxisMode::InsetFromRect,
-        alignment_for_item(box, GridDimension::Column),
-        alignment_for_item(box, GridDimension::Row),
+        .rect = grid_area_rect,
+        .anchor_rect = anchor_rect,
+        .resolved_left = resolved_left,
+        .resolved_right = resolved_right,
+        .resolved_top = resolved_top,
+        .resolved_bottom = resolved_bottom,
+        .horizontal_axis_mode = AbsposAxisMode::InsetFromRect,
+        .vertical_axis_mode = AbsposAxisMode::InsetFromRect,
+        .horizontal_insets_are_auto = horizontal_insets_are_auto,
+        .vertical_insets_are_auto = vertical_insets_are_auto,
+        .horizontal_alignment = alignment_for_item(box, GridDimension::Column),
+        .vertical_alignment = alignment_for_item(box, GridDimension::Row),
     };
 }
 
